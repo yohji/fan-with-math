@@ -97,7 +97,7 @@ class UserInterface
 				
 				if key.between?(0, 9)
 					buffer << input
-				
+					
 				elsif key == ENTER_KEY
 					@game.store(buffer.string)
 					buffer = StringIO.new
@@ -191,9 +191,7 @@ class UserInterface
 				@main_window << calc.to_s
 				
 				@main_window.color_set(5)
-				@main_window << " ("
-				@main_window << answer
-				@main_window << ")"
+				@main_window << " [#{answer}]"
 			else
 				@main_window.color_set(4)
 				@main_window << calc.to_s

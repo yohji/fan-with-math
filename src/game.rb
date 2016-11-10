@@ -66,8 +66,8 @@ class Game
 		case type
 		when Type::ARITHMETIC
 		
-			ra = "1#{'0' * (1 << (level - 1))}".to_i
-			rb = "1#{'0' * (1 << (level - 1))}".to_i
+			ra = "10#{'0' * (1 << (level - 2))}".to_i
+			rb = "10#{'0' * (1 << (level - 3))}".to_i
 			opr = ARITHMETIC_OPR[@rnd.rand(4)]
 		
 			a = @rnd.rand(ra)
