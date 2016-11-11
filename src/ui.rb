@@ -91,6 +91,7 @@ class UserInterface
 						  Game::Level::STUPID, Game::Level::GENIUS)
 					@game = Game.new(type, key)
 					game
+					
 				elsif key == ESC_KEY
 					home
 				end

@@ -37,6 +37,8 @@ class Game
 	
 	def initialize(type, level)
 		
+		@type = type
+		@level = level
 		exp = Expression.new(type, level)
 		
 		@rallies = Array.new
@@ -55,6 +57,11 @@ class Game
 	
 	def store(value)
 		
+		if @type == Type::LOGICAL
+			value = "true" if value == "1"
+			value = "false" if value == "0"
+		end
+		
 		@results.push(value)
 	end
 end
@@ -69,8 +76,8 @@ class Expression
 		@type = type
 		@level = level
 			
-		@range_a = "10#{'0' * (1 << (level - 2))}".to_i
-		@range_b = "10#{'0' * (1 << (level - 3))}".to_i
+		@range_a = "10#{'0' * (1 << (@level - 2))}".to_i
+		@range_b = "10#{'0' * (1 << (@level - 3))}".to_i
 			
 		@rnd = Random.new
 	end
@@ -82,7 +89,7 @@ class Expression
 			deep = @rnd.rand(@level)
 		
 		when Game::Type::LOGICAL
-			deep = @rnd.rand(1 << (@level - 1))
+			deep = @rnd.rand(1 << ((@level - 1) + Math.log2(@level)))
 		end
 		
 		exp = _core
