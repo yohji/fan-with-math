@@ -23,6 +23,7 @@ class UserInterface
 	
 	ENTER_KEY = 13
 	ESC_KEY = 27
+	BACK_KEY = 127
 	
 	module State
 		
@@ -57,6 +58,7 @@ class UserInterface
 
 		@main_window = Curses::Window.new(@screen_height, @screen_width, 1, 0)
 		@main_window.color_set(3)
+		@main_window.keypad(true)
 		@main_window.refresh
 		
 		@game_state = State::HOME
@@ -98,7 +100,20 @@ class UserInterface
 				if key.between?(0, 9)
 					buffer << input
 					
+				elsif key == BACK_KEY
+					
+					@main_window.delch
+					@main_window.setpos(@main_window.cury, @main_window.curx - 1)
+					@main_window.delch
+					@main_window.setpos(@main_window.cury, @main_window.curx - 1)
+					@main_window.delch
+					@main_window.setpos(@main_window.cury, @main_window.curx - 1)
+					@main_window.delch
+					
+					buffer = StringIO.new buffer.string[0...buffer.size - 1]
+					
 				elsif key == ENTER_KEY
+					
 					@game.store(buffer.string)
 					buffer = StringIO.new
 					game
@@ -177,24 +192,24 @@ class UserInterface
 		@main_window << "Results"
 		
 		idx = 0;
-		@game.rallies.each do |item|
+		@game.rallies.each do |exp|
 			
 			@main_window.color_set(3)
 			@main_window.setpos(@central_height + (idx + 2), @central_width)
-			calc = eval(item)
-			
-			@main_window << item
-			@main_window << " = "
 			
 			answer = @game.results.fetch(idx)
-			if (calc.to_i != answer.to_i)
-				@main_window << calc.to_s
-				
+			valid = ! answer.empty? && answer =~ /\A[+-]?\d+?(\.\d+)?\Z/ \
+			  ? eval("#{exp} == #{answer}") : false
+			calc = eval(exp)
+			
+			@main_window << exp
+			@main_window << " = "
+			
+			@main_window.color_set(4) if valid
+			@main_window << calc.to_s
+			if (! valid)
 				@main_window.color_set(5)
 				@main_window << " [#{answer}]"
-			else
-				@main_window.color_set(4)
-				@main_window << calc.to_s
 			end
 
 			idx += 1

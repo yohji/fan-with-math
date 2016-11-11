@@ -33,21 +33,18 @@ class Game
 		GENIUS = 5
 	end
 	
-	ARITHMETIC_OPR = ['+', '-', '*', '/']
-	LOGICAL_OPR = ['&', '|', '^']
-	
 	attr_accessor :rallies, :results
 	
 	def initialize(type, level)
 		
-		@rnd = Random.new
+		exp = Expression.new(type, level)
 		
 		@rallies = Array.new
 		@results = Array.new
 		@index = -1
 		
 		(10 + (level * Math.log2(level)).to_i).times do
-			@rallies << expression(type, level)
+			@rallies << exp.build
 		end
 	end
 	
@@ -60,30 +57,63 @@ class Game
 		
 		@results.push(value)
 	end
-	
-	def expression(type, level)
+end
+
+class Expression
 		
-		case type
-		when Type::ARITHMETIC
+	ARITHMETIC_OPR = ['+', '-', '*', '/']
+	LOGICAL_OPR = ['&', '|', '^']
 		
-			ra = "10#{'0' * (1 << (level - 2))}".to_i
-			rb = "10#{'0' * (1 << (level - 3))}".to_i
-			opr = ARITHMETIC_OPR[@rnd.rand(4)]
+	def initialize(type, level)
 		
-			a = @rnd.rand(ra)
-			if opr == '/'
-				until a % (b = @rnd.rand(rb) + 1) == 0 do end
-			else
-				b = @rnd.rand(rb)
-			end
-		
-		when Type::LOGICAL
+		@type = type
+		@level = level
 			
-			a = @rnd.rand(2)
-			opr = LOGICAL_OPR[@rnd.rand(3)]
-			b = @rnd.rand(2)
-		end
+		@range_a = "10#{'0' * (1 << (level - 2))}".to_i
+		@range_b = "10#{'0' * (1 << (level - 3))}".to_i
+			
+		@rnd = Random.new
+	end
+	
+	def build
 		
+		case @type
+		when Game::Type::ARITHMETIC
+			return _build_arithmetic
+			
+		
+		when Game::Type::LOGICAL
+			return _build_logical
+			
+		end
+	end
+	
+	private
+	def _build_arithmetic
+		
+		a = @rnd.rand(@range_a)
+		opr = ARITHMETIC_OPR[@rnd.rand(4)]
+		
+		if opr == '/'
+			until a % (b = @rnd.rand(@range_b) + 1) == 0 do end
+		else
+			b = @rnd.rand(@range_b)
+		end
+			
 		return "#{a} #{opr} #{b}"
+	end
+	
+	private
+	def _build_logical
+		
+		na = @rnd.rand(2) == 1 ? '!' : ''
+		a = @rnd.rand(2)
+		
+		opr = LOGICAL_OPR[@rnd.rand(3)]
+		
+		nb = @rnd.rand(2) == 1 ? '!' : ''
+		b = @rnd.rand(2)
+			
+		return "#{na}#{a} #{opr} #{nb}#{b}"
 	end
 end
