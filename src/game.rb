@@ -79,41 +79,74 @@ class Expression
 		
 		case @type
 		when Game::Type::ARITHMETIC
-			return _build_arithmetic
-			
+			deep = @rnd.rand(@level)
 		
 		when Game::Type::LOGICAL
-			return _build_logical
+			deep = @rnd.rand(1 << (@level - 1))
+		end
+		
+		exp = _core
+		deep.times do
+			exp = _extend exp
+		end
 			
+		return exp
+	end
+	
+	private
+	def _core
+		
+		case @type
+		when Game::Type::ARITHMETIC
+			
+			a = @rnd.rand(@range_a)
+			opr = ARITHMETIC_OPR[@rnd.rand(4)]
+		
+			if opr == '/'
+				until a % (b = @rnd.rand(@range_b) + 1) == 0 do end
+			else
+				b = @rnd.rand(@range_b)
+			end
+			
+			return "#{a} #{opr} #{b}"
+		
+		when Game::Type::LOGICAL
+			
+			na = @rnd.rand(2) == 1 ? '!' : ''
+			a = @rnd.rand(2) == 1 ? "true" : "false"
+		
+			opr = LOGICAL_OPR[@rnd.rand(3)]
+		
+			nb = @rnd.rand(2) == 1 ? '!' : ''
+			b = @rnd.rand(2) == 1 ? "true" : "false"
+			
+			return "#{na}#{a} #{opr} #{nb}#{b}"
 		end
 	end
 	
 	private
-	def _build_arithmetic
+	def _extend exp
 		
-		a = @rnd.rand(@range_a)
-		opr = ARITHMETIC_OPR[@rnd.rand(4)]
+		case @type
+		when Game::Type::ARITHMETIC
+			
+			opr = ARITHMETIC_OPR[@rnd.rand(4)]
 		
-		if opr == '/'
-			until a % (b = @rnd.rand(@range_b) + 1) == 0 do end
-		else
-			b = @rnd.rand(@range_b)
+			if opr == '/'
+				until eval(exp) % (b = @rnd.rand(@range_b) + 1) == 0 do end
+			else
+				b = @rnd.rand(@range_b)
+			end
+			
+			return "(#{exp}) #{opr} #{b}"
+		
+		when Game::Type::LOGICAL
+			
+			opr = LOGICAL_OPR[@rnd.rand(3)]
+			nb = @rnd.rand(2) == 1 ? '!' : ''
+			b = @rnd.rand(2) == 1 ? "true" : "false"
+			
+			return "(#{exp}) #{opr} #{nb}#{b}"
 		end
-			
-		return "#{a} #{opr} #{b}"
-	end
-	
-	private
-	def _build_logical
-		
-		na = @rnd.rand(2) == 1 ? '!' : ''
-		a = @rnd.rand(2)
-		
-		opr = LOGICAL_OPR[@rnd.rand(3)]
-		
-		nb = @rnd.rand(2) == 1 ? '!' : ''
-		b = @rnd.rand(2)
-			
-		return "#{na}#{a} #{opr} #{nb}#{b}"
 	end
 end

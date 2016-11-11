@@ -38,15 +38,15 @@ class UserInterface
 		Curses.init_screen
 		Curses.start_color
 		Curses.nonl
+		Curses.init_pair(1, Curses::COLOR_WHITE, Curses::COLOR_BLACK)
 		Curses.init_pair(2, Curses::COLOR_BLACK, Curses::COLOR_GREEN)
-		Curses.init_pair(3, Curses::COLOR_WHITE, Curses::COLOR_BLACK)
-		Curses.init_pair(4, Curses::COLOR_GREEN, Curses::COLOR_BLACK)
-		Curses.init_pair(5, Curses::COLOR_RED, Curses::COLOR_BLACK)
+		Curses.init_pair(3, Curses::COLOR_GREEN, Curses::COLOR_BLACK)
+		Curses.init_pair(4, Curses::COLOR_RED, Curses::COLOR_BLACK)
 		
 		@screen_height = Curses.lines
 		@screen_width = Curses.cols
-		@central_height = @screen_height / 4
-		@central_width = @screen_width / 4
+		@central_height = @screen_height / 8
+		@central_width = @screen_width / 8
 	end
 		
 	def setup
@@ -56,8 +56,8 @@ class UserInterface
 		header_window << "Fan with Math".center(@screen_width)
 		header_window.refresh
 
-		@main_window = Curses::Window.new(@screen_height, @screen_width, 1, 0)
-		@main_window.color_set(3)
+		@main_window = Curses::Window.new(@screen_height - 1, @screen_width, 1, 0)
+		@main_window.color_set(1)
 		@main_window.keypad(true)
 		@main_window.refresh
 		
@@ -107,10 +107,14 @@ class UserInterface
 					@main_window.delch
 					@main_window.setpos(@main_window.cury, @main_window.curx - 1)
 					@main_window.delch
-					@main_window.setpos(@main_window.cury, @main_window.curx - 1)
-					@main_window.delch
 					
-					buffer = StringIO.new buffer.string[0...buffer.size - 1]
+					if buffer.size > 0
+						
+						@main_window.setpos(@main_window.cury, @main_window.curx - 1)
+						@main_window.delch
+					
+						buffer = StringIO.new buffer.string[0...buffer.size - 1]
+					end
 					
 				elsif key == ENTER_KEY
 					
@@ -194,27 +198,29 @@ class UserInterface
 		idx = 0;
 		@game.rallies.each do |exp|
 			
-			@main_window.color_set(3)
+			@main_window.color_set(1)
 			@main_window.setpos(@central_height + (idx + 2), @central_width)
 			
 			answer = @game.results.fetch(idx)
-			valid = ! answer.empty? && answer =~ /\A[+-]?\d+?(\.\d+)?\Z/ \
+			calc = eval(exp).to_s
+			valid = ! answer.empty? \
+			  && (answer =~ /\A[+-]?\d+?(\.\d+)?\Z/ \
+				  || ["true", "false"].include?(answer)) \
 			  ? eval("#{exp} == #{answer}") : false
-			calc = eval(exp)
 			
 			@main_window << exp
 			@main_window << " = "
 			
-			@main_window.color_set(4) if valid
-			@main_window << calc.to_s
+			@main_window.color_set(3) if valid
+			@main_window << calc
 			if (! valid)
-				@main_window.color_set(5)
+				@main_window.color_set(4)
 				@main_window << " [#{answer}]"
 			end
 
 			idx += 1
 		end
 		
-		@main_window.color_set(3)
+		@main_window.color_set(1)
 	end
 end
